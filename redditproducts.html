@@ -545,7 +545,7 @@
 
     <script>
         $(function() {
-            d3.csv("top1000exp.csv", function(d) {
+            d3.csv("/data/top1000exp.csv", function(d) {
                 return d;
             }, function(error, rows) {
                 grid("#top1000reddit", rows);
