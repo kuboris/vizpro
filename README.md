@@ -20,5 +20,5 @@ Used tech
 #
 •	Lazy Load 1.9.1
 #
-
+•	Logo by Logodust
 
