@@ -18,7 +18,5 @@ Used tech
 #
 •	jQuery 2.1.4
 #
-•	Lazy Load 1.9.1
-#
 •	Logo by Logodust
 
