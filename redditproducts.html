@@ -63,14 +63,6 @@
                 return 1;
             });
 
-            console.log(data);
-            console.log(d3.min(data, function(d) {
-                return d.sum_score;
-            }));
-            console.log(d3.max(data, function(d) {
-                return d.sum_score;
-            }));
-
             var priceDimension = ndx.dimension(function(d) {
                 if (typeof d.price == "undefined") {
                     return "Unknown";
