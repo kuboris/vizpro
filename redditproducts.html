@@ -222,14 +222,7 @@
                         '# of links: ' + p.value.linkCount * 2
                     ].join('\n');
                 })
-                .on("renderlet", function(chart) {
-                    chart.selectAll('circle.bubble').on("click", function(p) {
-                        //console.log("click!", p);
-                        chart.filter(null)
-                            .filter(p.key)
-                            .redrawGroup();
-                    });
-                });
+                ;
 
 
 
