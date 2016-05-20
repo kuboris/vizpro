@@ -326,6 +326,7 @@
 
             subreddit_chart
                 .dimension(subredditDimension)
+				.promptText('Select subreddit')
                 .group(subredditGroup);
 
             priceChart /* dc.rowChart('#day-of-week-chart', 'chartGroup') */
@@ -470,12 +471,7 @@
                     </p>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="col-md-4">
-                                Subreddit:
-                            </div>
-                            <div class="col-md-6">
-                                <div class="group"></div>
-                            </div>
+                                <div style="margin-left: 20%;" class="group"></div>
                         </div>
                         <div class="col-md-6">
                             <div class="dc-data-count">
