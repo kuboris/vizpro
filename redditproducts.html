@@ -403,7 +403,7 @@ var trackOutboundLink = function(url) {
             grid_prod
                 .dimension(upvotesDimension)
                 .group(function(d) {
-                    return "<a href='" + d.link + "' target='_blank' onclick='trackOutboundLink("\test\"); return false;' >" + d.productname.substring(0, 100) + "</a>";
+                    return "<a href='" + d.link + "' target='_blank' onclick='trackOutboundLink(&quot;test&quot;); return false;' >" + d.productname.substring(0, 100) + "</a>";
                 })
                 .size(1000)
                 //  .htmlGroup (function (d) { return "<a href=" + d.value.link + " target='_blank' ><h1 class='dc-grid-label'>" + d.key + "</h1>";})
