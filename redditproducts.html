@@ -27,14 +27,14 @@
   ga('send', 'pageview');
 
     </script>
-    <script>
-	var trackOutboundLink = function(url) {
-   		ga('send', 'event', 'outbound', 'click', url, {
-     	'transport': 'beacon',
-     	'hitCallback': function(){document.location = url;}
-   	});
-	}
-    </script>
+<script>
+var trackOutboundLink = function(url) {
+   ga('send', 'event', 'outbound', 'click', url, {
+     'transport': 'beacon',
+     'hitCallback': function(){document.location = url;}
+   });
+}
+</script>
     <script>
         var tpl = _.template("<div style='height: 165px;'><div style='display: flex;   justify-content: center;   align-items:center; height: 100%;'><a href='<%= link %>' target='_blank' onclick='trackOutboundLink('<%= link %>'); return false;' ><img src='<%= mediumimage %>' alt='<%= productname %> member of <%= subreddit %>' title='<%= productname %> in <%= subreddit %>' width=auto height=auto /></a></div></div><p class='product-price'>Price : $<%= price/100 %><br></p><p class='product-upvotes'>Upvotes: <%= sum_score %><br></p><p class='group'>Product group: <%= group %><br></p><p class='group'>Subreddit: <%= subreddit %><br></p><a href='<%= link %>' target='_blank' title='Click for details'>Details</a>");
 
@@ -475,7 +475,7 @@
             <div class="container-fluid">
                 <div class="row">
 
-                    <h1 class="page-header"><a href="http://vizpro.top"><img alt="VizPro Home" height="40" src="images/VlogoGrey.png" width="40"></a>Top products on Reddit</h1>
+                    <h1 class="page-header"><a href="http://vizpro.top"><img alt="VizPro Home" height="40" src="images/VlogoGrey.png" width="40" onclick="trackOutboundLink('http://vizpro.top'); return false;"></a>Top products on Reddit</h1>
                     <p align="center"><b>Click on the graphs to filter products by subreddit,price or gold count</b>
                     </p>
                     <div class="row">
