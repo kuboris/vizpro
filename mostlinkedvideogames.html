@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <meta property="og:image" content="http://vizpro.top/images/reddit.png">
+    <title>Top products on Reddit</title>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap-min.css">
+    <link rel="stylesheet" type="text/css" href="/stylesheets/dc-min.css" />
+    <link href='https://fonts.googleapis.com/css?family=Karla:400,700' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+    <script type="text/javascript" src="/js/d3-min.js"></script>
+    <script type="text/javascript" src="/js/crossfilter-min.js"></script>
+    <script type="text/javascript" src="/js/dc-min.js"></script>
+    <script type="text/javascript" src="http://underscorejs.org/underscore-min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-11428623-24', 'auto');
+  ga('send', 'pageview');
+var trackOutboundLink = function(url) {
+   ga('send', 'event', 'outbound', 'click', url, {
+     'transport': 'beacon',
+     'hitCallback': function(){window.open(url);}
+   });
+}
+    </script>
+
+    <script>
+        var tpl = _.template("<div style='height: 165px;'><div style='display: flex;   justify-content: center;   align-items:center; height: 100%;'><a href='<%= link %>' target='_blank' onclick='trackOutboundLink('<%= link %>'); return false;' ><img src='<%= mediumimage %>' alt='<%= title %> member of <%= subreddit %>' title='<%= title %> in <%= subreddit %>' width=auto height=auto /></a></div></div><p class='product-amount'>amount : $<%= amount/100 %><br></p><p class='product-upvotes'>Upvotes: <%= sum_score %><br></p><p class='group'>Product group: <%= group %><br></p><p class='group'>Subreddit: <%= subreddit %><br></p><a href='<%= link %>' target='_blank' title='Click for details'>Details</a>");
+        function grid(selector, data) {
+            var ndx = crossfilter(data),
+                all = ndx.groupAll();
+            // Get width of an element and use it for wide graphs - has to be defined first because of IE sucks
+            var width = 1024
+            width = document.getElementById('top1000reddit').offsetWidth;
+            // Redraw on window size change
+            window.onresize = function(event) {
+                var newWidth = document.getElementById('top1000reddit').offsetWidth;
+                productBubbleChart.width(newWidth)
+                pie_gilded1.width(newWidth / 4.3)
+                nsfw_row.width(newWidth / 4.3)
+                yearChart.width(newWidth / 4.3)
+                amountChart.width(newWidth / 4.3)
+                bar_subreddit.width(newWidth / 2.4)
+                bar_subreddit.gap(1)
+                    .transitionDuration(0);
+                dc.renderAll();
+                productBubbleChart.transitionDuration(750);
+            };
+            var amountChart = dc.rowChart(' .list');
+            var grid_prod = dc.dataGrid(".dc-data-grid");
+            var subreddit_chart = dc.selectMenu(selector + " .group");
+            var subredditDimension = ndx.dimension(function(d) {
+                if (typeof d.subreddit == "undefined") return "";
+                return d.subreddit;
+            });
+            var subredditGroup = subredditDimension.group().reduceSum(function(d) {
+                return 1;
+            });
+            var groupDimension = ndx.dimension(function(d) {
+                if (typeof d.typename == "undefined") return "";
+                return d.typename;
+            });
+            var groupGroup = groupDimension.group().reduceSum(function(d) {
+                return 1;
+            });
+            var amountDimension = ndx.dimension(function(d) {
+                if (typeof d.amount == "undefined") {
+                    return "Unknown";
+                } else if (d.amount < 1) {
+                    return "Unknown amount";
+                } else if (d.amount < 500) {
+                    return "<$  5";
+                } else if (d.amount < 1000) {
+                    return "<$ 10";
+                } else if (d.amount < 2500) {
+                    return "<$ 25";
+                } else if (d.amount < 10000) {
+                    return "<$100";
+                } else if (d.amount < 50000) {
+                    return "<$500";
+                } else {
+                    return ">$500";
+                }
+            });
+            var amountGroup = amountDimension.group().reduceSum(function(d) {
+                return 1;
+            });
+            var yearChart = dc.rowChart(' .year');
+            var yearDimension = ndx.dimension(function(d) {
+                if (typeof d.binding == "undefined") {
+                    return "Unknown";
+                } else {
+                    return d.binding;
+                }
+            });
+            var yearGroup = yearDimension.group().reduceSum(function(d) {
+                return 1;
+            });
+            var nsfwDimension = ndx.dimension(function(d) {
+                if (typeof d.group == "undefined") {
+                    return "Unknown";
+                } else {
+                    return d.group;
+                }
+            });
+            var nsfwGroup = nsfwDimension.group().reduceSum(function(d) {
+                return 1;
+            });
+            var productDimension = ndx.dimension(function(d) {
+                if (typeof d.product == "undefined") return "";
+                return d.product;
+            });
+            var productGroup = productDimension.group().reduce(
+                /* callback for when data is added to the current filter results */
+                function(p, v) {
+                    ++p.count;
+                    p.sum_score += v.sum_score / 2;
+                    p.linkCount += v.indicator / 2;
+                    p.size += v.sum_comments / 2;
+                    p.typename = v.typename;
+                    return p;
+                },
+                /* callback for when data is removed from the current filter results */
+                function(p, v) {
+                    --p.count;
+                    p.sum_score -= v.sum_score / 2;
+                    p.linkCount -= v.indicator / 2;
+                    p.size -=  v.sum_comments / 2;
+                    p.typename = v.typename;
+                    return p;
+                },
+                /* initialize p */
+                function() {
+                    return {
+                        count: 0,
+                        sum_score: 0,
+                        linkCount: 0,
+                        typename: '',
+                        size: 0
+                    };
+                }
+            );
+            var upvotesDimension = ndx.dimension(function(d) {
+                return [Math.sqrt(parseInt(d.sum_score) * 2)];
+            });
+            var upvotesGroup = upvotesDimension.group().reduceSum(function(d) {
+                return +d.product;
+            });
+            var productBubbleChart = dc.bubbleChart(selector + " .bubble");
+            productBubbleChart
+                .width(width)
+                .height(400)
+                //.transitionDuration(1500)
+                .margins({
+                    top: 10,
+                    right: 5,
+                    bottom: 30,
+                    left: 30
+                })
+                .dimension(productDimension)
+                .group(productGroup)
+                .colorAccessor(function(p) {
+                    return p.value.typename;
+                })
+                // `.keyAccessor` - the `X` value
+                .keyAccessor(function(p) {
+                    return (p.value.sum_score * 2);
+                })
+                // `.valueAccessor` - the `Y` value
+                .valueAccessor(function(p) {
+                    return (p.value.linkCount * 2);
+                })
+                .radiusValueAccessor(function(p) {
+                    return (p.value.size* 2);
+                })
+                .maxBubbleRelativeSize(0.04)
+                .colors(d3.scale.ordinal().range(["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "#FF9F30", "#A02C2C","#3182bd"]))
+                .minRadiusWithLabel(9)
+                .x(d3.scale.pow().exponent(.1).domain([200, 8000]))
+                .y(d3.scale.linear().domain([.5, 100]))
+                .r(d3.scale.linear().domain([.5, 900]))
+                .yAxisPadding(250)
+				.xAxisPadding(250)
+                .elasticY(true)
+                //.elasticX(true)
+                .elasticRadius(true)
+                //.colors(function(p){ return colorScale(p.value.group); })
+                // will add with updated version
+                //.sortBubbleSize(true)
+            .yAxisPadding(5)
+                .xAxisPadding(2)
+            .renderHorizontalGridLines(true)
+                .renderVerticalGridLines(true)
+                .xAxisLabel('Upvotes (Log)')
+                .yAxisLabel('Popularity')
+                .renderLabel(true)
+                .label(function(p) {
+                    return p.key.substring(0, 15);
+                })
+            .renderTitle(true)
+                .title(function(p) {
+                    return [
+                        p.key,
+                        'Upvotes: ' + p.value.sum_score * 2,
+                        'Group: ' + p.value.group,
+                        '# of links: ' + p.value.linkCount * 2
+                    ].join('\n');
+                })
+                ;
+            volumeChart = dc.barChart(selector + " .upvotes");
+            volumeChart
+                .width(990) /* dc.barChart('#monthly-volume-chart', 'chartGroup'); */
+                .height(40)
+                .margins({
+                    top: 0,
+                    right: 50,
+                    bottom: 20,
+                    left: 40
+                })
+                .dimension(upvotesDimension)
+                .group(upvotesGroup)
+                .round(dc.round.floor)
+                .elasticX(true)
+                .centerBar(true)
+                .gap(1)
+                .x(d3.scale.linear().domain([1, 200]))
+                //.round(d3.time.month.round)
+                .alwaysUseRounding(true)
+                //.xUnits(d.sum_score)
+                //.x(d3.scale.ordinal())
+                .xUnits(d3.scale.linear)
+                .yAxis().tickFormat(function(v) {
+                    return v;
+                });
+            var pie_gilded1 = dc.rowChart(selector + " .gilded1");
+            var gilded1 = ndx.dimension(function(d) {
+                if (d.FunnyReview >= 1) {
+                    return "1";
+                } else {
+                    return '0';
+                }
+            });
+            var groupgilded1 = gilded1.group().reduceSum(function(d) {
+                return 1;
+            });
+            var bar_subreddit = dc.barChart(selector + " .subreddit");
+            var Namegilded1 = {
+                "1": "Gilded",
+                "0": "Regular"
+            };
+            pie_gilded1
+                .width(width / 4.3)
+                .height(200)
+                .dimension(gilded1)
+                .colors(["#6BAED6", "#DBDB8D"])
+                .label(function(d) {
+                    return Namegilded1[d.key];
+                })
+                .elasticX(true)
+                .group(groupgilded1)
+                .gap(1)
+                .xAxis().ticks(4);
+            var nsfw_row = dc.rowChart(selector + " .nsfw_row");
+            nsfw_row
+                .width(width / 4.3)
+                .height(200)
+                .dimension(nsfwDimension)
+                .label(function(d) {
+                    return d.key;
+                })
+                .elasticX(true)
+                .group(nsfwGroup)
+                .colors(d3.scale.ordinal().range(["#D62728", "#98DF8A"]))
+                .gap(1)
+                .xAxis().ticks(4);
+            yearChart
+                .width(width / 4.3)
+                .height(200)
+                .dimension(yearDimension)
+                .label(function(d) {
+                    return d.key;
+                })
+                .elasticX(true)
+                .group(yearGroup)
+                .colors(d3.scale.category20c())
+                .gap(1)
+                .xAxis().ticks(4);
+            subreddit_chart
+                .dimension(subredditDimension)
+				.promptText('Select subreddit')
+                .group(subredditGroup);
+            amountChart /* dc.rowChart('#day-of-week-chart', 'chartGroup') */
+                .width(width / 4.3)
+                .height(200)
+                .margins({
+                    top: 10,
+                    right: 50,
+                    bottom: 30,
+                    left: 40
+                })
+                .group(amountGroup)
+                .dimension(amountDimension)
+                .colors(d3.scale.ordinal().range(["#98DF8A", "#C7E9C0", "#DBDB8D", "#E7BA52", "#FDAE6B", "#E6550D", "#D9D9D9"]))
+                // Assign colors to each value in the x scale domain
+                .elasticX(true)
+                // (_optional_) whether bar should be center to its x value. Not needed for ordinal chart, `default=false`
+                //.centerBar(true)
+                // (_optional_) set gap between bars manually in px, `default=2`
+                .gap(1)
+                .xAxis().ticks(4)
+                // (_optional_) set filter brush rounding
+            ;
+            bar_subreddit
+                .width(width / 2.4)
+                .height(200)
+                .outerPadding(0)
+                .gap(1)
+                .margins({
+                    top: 0,
+                    right: 0,
+                    bottom: 95,
+                    left: 40
+                })
+                .x(d3.scale.ordinal())
+                .xUnits(dc.units.ordinal)
+                .colorAccessor(function(d, i) {
+                    return i;
+                })
+                //.colors(d3.scale.category20c())
+                .colors(d3.scale.ordinal().range(["#1F77B4", "#C5B0D5", "#FFBB78", "#2CA02C", "#AEC7E8", "#FF7F0E", "#98DF8A", "#DBDB8D","#3182BD", "#AEC7E8", "#A02C2C", "#7F7F7F", "#1F77B4", "#2CA02C", "#9467BD", "#C7C7C7", "#8C564B", "#FF9F30", "#C49C94", "#FFBB78", "#FF7F0E", "#FF9896", "#BCBD22", "#D62728", "#F7B6D2", "#E377C2"]))
+                .brushOn(false)
+                .elasticY(true)
+                .yAxisLabel("#Products")
+                .dimension(groupDimension)
+                .group(groupGroup);
+            bar_subreddit.on("postRender", function(c) {
+                rotateBarChartLabels();
+            });
+            function rotateBarChartLabels() {
+                d3.selectAll(selector + ' .subreddit .axis.x text')
+                    .style("text-anchor", "end")
+                    .attr("transform", function(d) {
+                        return "rotate(-50, -4, 9) ";
+                    });
+            }
+            dc.dataCount(".dc-data-count")
+                .dimension(ndx)
+                .group(all);
+            grid_prod
+                .dimension(upvotesDimension)
+                .group(function(d) {
+                    return "<a href='" + d.link + "' target='_blank' onclick='trackOutboundLink(\u0034http://www.example.com\u0034); return false;'>" + d.title.substring(0, 200) + "</a>";
+                })
+                .size(1000)
+                //  .htmlGroup (function (d) { return "<a href=" + d.value.link + " target='_blank' ><h1 class='dc-grid-label'>" + d.key + "</h1>";})
+                .html(function(d) {
+                    return tpl(d);
+                })
+                .sortBy(function(d) {
+                    return d.sum_score / 100;
+                })
+                .order(d3.descending)
+                .beginSlice(0)
+                .endSlice(1)
+                .on('renderlet', function(grid) {
+                    if (all.value() != selected) ofs = 0;
+                    update();
+                    if (all.value() != selected) {
+                        selected = all.value();
+                        grid_prod.redraw();
+                    }
+                    //console.log(group.value());
+                });
+            dc.renderAll();
+            var ofs = 0,
+                pag = 1,
+                selected = all.value();
+            function display() {
+                d3.select('#begin')
+                    .text(ofs);
+                d3.select('#end')
+                    .text(ofs + pag);
+                d3.select('#last')
+                    .attr('disabled', ofs - pag < 0 ? 'true' : null);
+                d3.select('#next')
+                    .attr('disabled', ofs + pag >= all.value() ? 'true' : null);
+                d3.select('#size').text(all.value());
+            }
+            function update() {
+                grid_prod.beginSlice(ofs);
+                grid_prod.endSlice(ofs + pag);
+                display();
+            }
+            next = function next() {
+                ofs += pag;
+                update();
+                grid_prod.redraw();
+            }
+            last = function last() {
+                ofs -= pag;
+                update();
+                grid_prod.redraw();
+            }
+            update();
+            grid_prod.redraw();
+        }
+    </script>
+
+
+
+    <div class="container">
+        <div id="top1000reddit">
+            <div class="container-fluid">
+                <div class="row">
+
+                    <h1 class="page-header"><a href="http://vizpro.top"><img alt="VizPro Home" height="40" src="images/VlogoGrey.png" width="40" ></a>Top products on Reddit</h1>
+                    <p align="center"><b>Click on the graphs to filter products by subreddit,amount or gold count</b>
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                                <div style="margin-left: 10%;" class="group"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="dc-data-count">
+                                <span class="filter-count"></span> selected out of <span class="total-count"></span> products | <a href="javascript:dc.filterAll(); dc.renderAll();">Reset All</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bubble">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="list"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="year"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="gilded1"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="subreddit"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="nsfw_row"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div style="margin-top: -37px; text-align: right;">Showing <span id="end"></span> of <span id="size"></span>.</div>
+                        <div class="dc-data-grid" style="    width: 100%;"></div>
+                        <div id="paging">
+                        </div>
+                        <input id="last" type="Button" style="float: left;" value="<" onclick="javascript:last()" />
+                        <input id="next" type="button" style="float: right;" value=">" onclick="javascript:next()" />
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+            </div>
+
+
+            <div style="clear:both;">
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function() {
+            d3.csv("/data/TopVideoGames.csv", function(d) {
+                return d;
+            }, function(error, rows) {
+                grid("#top1000reddit", rows);
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>
