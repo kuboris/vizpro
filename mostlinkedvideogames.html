@@ -253,7 +253,7 @@ var trackOutboundLink = function(url) {
             });
             var bar_subreddit = dc.barChart(selector + " .subreddit");
             var Namegilded1 = {
-                "1": "Gilded",
+                "1": "Linked Review",
                 "0": "Regular"
             };
             pie_gilded1
@@ -278,7 +278,7 @@ var trackOutboundLink = function(url) {
                 })
                 .elasticX(true)
                 .group(nsfwGroup)
-                .colors(d3.scale.ordinal().range(["#D62728", "#98DF8A"]))
+                .colors(d3.scale.ordinal().range(["#C5B0D5", "#98DF8A","#1F77B4"]))
                 .gap(1)
                 .xAxis().ticks(4);
             yearChart
@@ -421,8 +421,8 @@ var trackOutboundLink = function(url) {
             <div class="container-fluid">
                 <div class="row">
 
-                    <h1 class="page-header"><a href="http://vizpro.top"><img alt="VizPro Home" height="40" src="images/VlogoGrey.png" width="40" ></a>Top products on Reddit</h1>
-                    <p align="center"><b>Click on the graphs to filter products by subreddit,amount or gold count</b>
+                    <h1 class="page-header"><a href="http://vizpro.top"><img alt="VizPro Home" height="40" src="images/VlogoGrey.png" width="40" ></a>Top videogames Linked on Reddit</h1>
+                    <p align="center"><b>Click on the graphs to filter products by subreddit,price or group</b>
                     </p>
                     <div class="row">
                         <div class="col-md-6">
@@ -481,7 +481,11 @@ var trackOutboundLink = function(url) {
             </div>
         </div>
     </div>
-
+<div class="footer">
+  <a style="margin-left: 35px;" href="http://vizpro.top/" class="ui-btn ui-icon-plus ui-btn-icon-left">Home</a>
+  <a style="margin-left: 35px;" href="http://vizpro.top/redditproducts.html" class="ui-btn ui-icon-plus ui-btn-icon-left">Top Products on Reddit</a>
+  <a style="margin-left: 35px;" href="http://vizpro.top/mostlinkedvideogames.html" class="ui-btn ui-icon-plus ui-btn-icon-left">Top VideoGames on Reddit</a>
+</div>
     <script>
         $(function() {
             d3.csv("/data/TopVideoGames.csv", function(d) {
