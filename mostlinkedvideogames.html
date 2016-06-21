@@ -33,7 +33,7 @@ var trackOutboundLink = function(url) {
     </script>
 
     <script>
-        var tpl = _.template("<div style='height: 165px;'><div style='display: flex;   justify-content: center;   align-items:center; height: 100%;'><a href='<%= link %>' target='_blank' onclick='trackOutboundLink('<%= link %>'); return false;' ><img src='<%= mediumimage %>' alt='<%= title %> member of <%= subreddit %>' title='<%= title %> in <%= subreddit %>' width=auto height=auto /></a></div></div><p class='product-amount'>amount : $<%= amount/100 %><br></p><p class='product-upvotes'>Upvotes: <%= sum_score %><br></p><p class='group'>Product group: <%= group %><br></p><p class='group'>Subreddit: <%= subreddit %><br></p><a href='<%= link %>' target='_blank' title='Click for details'>Details</a>");
+        var tpl = _.template("<div style='height: 165px;'><div style='display: flex;   justify-content: center;   align-items:center; height: 100%;'><a href='<%= link %>' target='_blank' onclick='trackOutboundLink(&quot;<%= link %>&quot;); return false;' ><img src='<%= mediumimage %>' alt='<%= title %> member of <%= subreddit %>' title='<%= title %> in <%= subreddit %>' width=auto height=auto /></a></div></div><p class='product-amount'>amount : $<%= amount/100 %><br></p><p class='product-upvotes'>Upvotes: <%= sum_score %><br></p><p class='group'>Product group: <%= group %><br></p><p class='group'>Subreddit: <%= subreddit %><br></p><a href='<%= link %>' onclick='trackOutboundLink(&quot;<%= link %>&quot;); return false;' target='_blank' title='Click for details'>Details</a>");
         function grid(selector, data) {
             var ndx = crossfilter(data),
                 all = ndx.groupAll();
