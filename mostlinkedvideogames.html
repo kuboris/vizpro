@@ -357,8 +357,7 @@ var trackOutboundLink = function(url) {
             grid_prod
                 .dimension(upvotesDimension)
                 .group(function(d) {
-                    return "<a href='" + d.link + "' target='_blank' onclick='trackOutboundLink(\u0034http://www.example.com\u0034); return false;'>" + d.title.substring(0, 200) + "</a>";
-                })
+                    return "<a href='" + d.link + "' target='_blank' onclick='trackOutboundLink(&quot;" + d.link + "&quot;); return false;' >" + d.title.substring(0, 180) + "</a>";                })
                 .size(1000)
                 //  .htmlGroup (function (d) { return "<a href=" + d.value.link + " target='_blank' ><h1 class='dc-grid-label'>" + d.key + "</h1>";})
                 .html(function(d) {
